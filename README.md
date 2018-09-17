@@ -15,6 +15,8 @@ Test on localhost using Ubuntu 16.04.2 LTS* on personal computer
 execute the ansible with this command
 
 sudo ansible-playbook playbook.yml -i hosts -e mysql_root_password=#password#
+
+To see the ip use the showip.sh
 ```
 
 Task Number 2
