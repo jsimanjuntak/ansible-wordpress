@@ -4,11 +4,11 @@ Task Number 1
 
 ```
 Set up the wordpress/blogsite with ansible
-tested on local
+tested on localhost
 
 Personal Note :
 I don't have aws/gcp/do to do the task and don't have cc to register
-Since I don't ask the preparation I have to do, 
+Since I don't ask the preparation I have to do (mybad), 
 so I dont have enough time to get cc or ask someone cc to register (my bad)
 
 Test on localhost using Ubuntu 16.04.2 LTS* on personal computer
