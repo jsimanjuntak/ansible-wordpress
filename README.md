@@ -8,7 +8,8 @@ tested on local
 
 Personal Note :
 I don't have aws/gcp/do to do the task and don't have cc to register
-Since I don't ask the preparation I have to do, so I dont have enough time to get cc or ask someone cc to register (my bad)
+Since I don't ask the preparation I have to do, 
+so I dont have enough time to get cc or ask someone cc to register (my bad)
 
 Test on localhost using Ubuntu 16.04.2 LTS* on personal computer
 
