@@ -1,0 +1,3 @@
+---
+- include: install.yml tags=nginx
+- include: setup.yml tags=nginx
