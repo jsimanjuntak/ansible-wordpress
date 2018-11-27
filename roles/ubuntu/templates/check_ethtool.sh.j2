@@ -1,0 +1,43 @@
+#!/bin/bash
+# 
+# Script to monitor network speed change using ethtool
+# Author: Sumarto
+# Version: 1.0
+#
+# Desc: Will generate alert if the Speed is below 1000Mb or not in FULL duplex mode
+
+ERR=0
+PROBLEM="Suspect: "
+
+for i in $( ip add|grep "state UP"|grep mtu |grep -v lo:|awk {'print $2'}|cut -d: -f1 ); do
+  	# Get Speed
+	SPEED=`ethtool $i|grep Speed | awk '{ print $2 }'`
+	# Get Duplex
+	DUPLEX=`ethtool $i|grep Duplex | awk '{ print $2 }'` 
+
+    if [ "$SPEED" = "1000Mb/s" ] || [ "$SPEED" = "10000Mb/s" ]  ; then
+ 	if [ "$DUPLEX" != "Full" ] ; then 
+   		#echo "$i == WARNING - Speed: $SPEED  , Duplex NOT Full: $DUPLEX"
+   		ERR=1
+        	PROBLEM="$PROBLEM $i"
+        fi 
+    else
+    	#echo "$i == CRITICAL - Speed: $SPEED  , Duplex: $DUPLEX"
+    	ERR=2
+    	PROBLEM="$PROBLEM $i"
+    fi
+done
+
+
+if [ "$ERR" = "1" ] ; then
+        echo  "WARNING NOT FULL Duplex - $PROBLEM"
+        exit $ERR
+elif [ "$ERR" = "2" ] ; then
+        echo  "CRITICAL Speed changed to $SPEED- $PROBLEM"
+        exit $ERR
+else
+        echo "OK - All Interface is normal"
+        exit 0
+fi
+
+

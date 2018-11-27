@@ -1,0 +1,8 @@
+- name: Comment out current swappiness setting
+  replace: regexp="vm.swappiness =" dest=/etc/sysctl.conf  replace="#vm.swappiness ="
+
+- name: Add new swappiness setting
+  lineinfile: dest=/etc/sysctl.conf  state=present line="vm.swappiness = 5"
+
+- name: Set running configuration
+  command: sysctl -w vm.swappiness=5

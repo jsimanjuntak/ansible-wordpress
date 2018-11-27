@@ -1,0 +1,8 @@
+---
+- name: remove apt file 
+  file: path={{ item }} state=absent
+  with_items: 
+  - /etc/apt/apt.conf
+  - /etc/apt/sources.list.d/sources-aliyun-0.list
+  - /etc/apt/sources.list.d/sources-aliyun-1.list
+

@@ -1,0 +1,13 @@
+description "Consul agent client for registering service to consul cluster"
+
+start on (local-filesystems and net-device-up IFACE=eth0)
+stop on runlevel [!12345]
+
+limit nofile 4096 4096
+
+respawn
+
+setuid consul
+setgid consul
+
+exec consul agent --enable-script-checks=true --config-dir=/etc/consul.d  > /var/log/consul/consul.log

@@ -1,0 +1,18 @@
+driftfile /var/lib/ntp/drift
+restrict default kod nomodify notrap nopeer noquery
+restrict -6 default kod nomodify notrap nopeer noquery
+
+restrict 127.0.0.1
+restrict -6 ::1
+
+restrict 10.0.0.0 netmask 255.0.0.0 nomodify notrap
+restrict 172.0.0.0 netmask 255.0.0.0 nomodify notrap
+logfile /var/log/ntp.log
+
+
+server 10.255.12.70 prefer
+
+
+includefile /etc/ntp/crypto/pw
+
+keys /etc/ntp/keys

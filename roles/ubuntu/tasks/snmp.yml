@@ -1,0 +1,18 @@
+---
+
+- name: install snmp
+  apt: name={{ item }} state=present update_cache=yes
+  with_items:
+    - snmpd
+ 
+- name: Start snmpd on boot
+  service: name=snmpd enabled=yes
+
+- name: copy file config
+  template: backup=yes src=snmpd.conf.j2 dest=/etc/snmp/snmpd.conf
+  notify: restart snmp
+
+
+
+    
+

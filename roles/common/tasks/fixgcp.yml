@@ -1,0 +1,24 @@
+---
+# Fix resolv.conf
+- name: Set resolve.conf in GCP
+  template: src=tail.j2 dest=/etc/resolvconf/resolv.conf.d/tail
+
+- name: remove resolveconf file 
+  file: path='/etc/dhcp/dhclient-enter-hooks.d/resolvconf' state=absent
+
+- name: copy file script nodnsupdate
+  template: src=nodnsupdate.j2 dest=/etc/dhcp/dhclient-enter-hooks.d/nodnsupdate mode=0774
+
+- name: Update resolve.conf
+  shell: resolvconf -u
+
+- name: Set resolve.conf in GCP (2)
+  template: src=tail.j2 dest=/run/resolvconf/resolv.conf
+
+# Add system-info after login
+- name: Copy system-info template
+  template: src=gcp-system-info.ubuntu dest=/usr/bin/system-info mode=0755
+
+# Add timestamp to history
+- name: Setup bashrc for show date on history
+  lineinfile: dest=/etc/bash.bashrc state=present line="export HISTTIMEFORMAT=\"%F %T \""

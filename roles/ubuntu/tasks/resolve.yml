@@ -1,0 +1,5 @@
+- name: copy etc config (hosts,resolv.conf)
+  template: src={{item}} dest=/etc/
+  with_items:
+    - resolv.conf
+  tags: change_etc

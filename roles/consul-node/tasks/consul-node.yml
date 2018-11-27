@@ -1,0 +1,83 @@
+---
+  # password 'consul' with salt 'ff'. use openssl to generate.
+- name: Add consul user
+  user: name=consul password=$1$ff$UPjrGZCYiyjbKCZYrmOxa0
+
+- name: Install unzip packages from apt
+  apt: name={{ item }} state=present
+  with_items:
+  - unzip
+
+- name: Copy consul packages
+  get_url: url="http://tokopedia-upload.s3-website-ap-southeast-1.amazonaws.com/packages/{{item}}.zip" dest=/tmp/{{ item }}.zip
+  with_items:
+    - consul_1.0.0_linux_amd64
+
+- name: Install consul packages
+  unarchive: copy=no src=/tmp/{{ item }}.zip dest=/usr/local/bin
+  with_items:
+    - consul_1.0.0_linux_amd64
+
+- name: Prepare consul configuration directory
+  file: path=/etc/consul.d/ state=directory owner=consul group=consul mode=0775 recurse=yes
+
+- name: Prepare consul data directory
+  file: path=/var/consul/ state=directory owner=consul group=consul mode=0775 recurse=yes
+
+- name: Prepare consul log directory
+  file: path=/var/log/consul state=directory owner=consul group=consul mode=0775 recurse=yes
+
+- name: Copy logrotate config
+  copy: src=consul dest=/etc/logrotate.d/consul
+  tags: logrotate_consul
+
+- name: Copy consul config
+  template: src={{ item }}.json.j2 dest=/etc/consul.d/{{ item }}.json
+  with_items:
+    - node
+  register: copy_consul_node_config
+  tags: fixconsul
+
+- name: Copy upstart scripts for consul - Ubuntu 14.04
+  template: src={{ item }}.conf.j2 dest=/etc/init/{{ item }}.conf
+  with_items:
+    - consul-node
+  tags:
+    - copy-consul-init-conf
+  when: ansible_distribution_version == "14.04"
+
+- name: Copy upstart scripts for consul for Ubuntu 16.04
+  template: src={{ item }}.service.j2 dest=/etc/systemd/system/{{ item }}.service
+  with_items:
+    - consul-node
+  tags:
+    - copy-consul-node-conf
+  when: ansible_distribution_version == "16.04"
+
+- name: Prepare consul script data directory
+  file: path=/var/consul/script state=directory mode=0775 recurse=yes
+  tags: healtcheckscript
+  when: file_script_healthcheck is defined
+
+- name: create script health check without opening port
+  copy: src=check_script.sh dest=/var/consul/script/check_script.sh
+  tags: healtcheckscript
+  when: file_script_healthcheck is defined
+
+- name: Grant user consul with sudo
+  shell: adduser consul sudo
+  tags:
+   - consul-sudo-grant
+  when: fd_watch is defined
+
+- name: Start consul-node
+  service: name=consul-node state=started
+  register: consul_node_just_started
+
+- name: Reload consul-node
+  service: name=consul-node state=reloaded
+  tags: fixconsul
+  when: copy_consul_node_config.changed and consul_node_just_started is not defined
+
+- name: Consul maint node
+  command: consul maint --enable

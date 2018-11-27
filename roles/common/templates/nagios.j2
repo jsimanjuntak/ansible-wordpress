@@ -1,0 +1,5 @@
+## Allow NRPE to restart nginx
+User_Alias NAGIOS = nagios,nagcmd
+Cmnd_Alias NAGIOSCOMMANDS = /usr/sbin/service nginx restart
+Defaults:NAGIOS !requiretty
+NAGIOS    ALL=(ALL)    NOPASSWD: NAGIOSCOMMANDS

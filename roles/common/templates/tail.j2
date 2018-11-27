@@ -1,0 +1,5 @@
+options timeout:1 attempts:1 rotate
+{% for host in dns_servers %}
+nameserver {{ host }}
+{% endfor %}
+search tokopedia.local

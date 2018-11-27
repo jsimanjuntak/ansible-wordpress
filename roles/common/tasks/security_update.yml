@@ -1,0 +1,12 @@
+---
+- name: Copy unattended-upgrades periodic config file
+  copy: src=10periodic dest=/etc/cron.daily/
+
+- name: Copy unattended-upgrades periodic local repository upgrade config file
+  copy: src={{item}} dest=/etc/apt/apt.conf.d/
+  with_items:
+    - 50unattended-upgrades
+    - 20auto-upgrades
+
+- name: disable check for new release
+  replace: dest=/etc/update-manager/release-upgrades replace="Prompt=never" regexp="^Prompt=.*$"

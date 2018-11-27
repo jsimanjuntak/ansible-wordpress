@@ -1,0 +1,24 @@
+- name: install ntp
+  apt: name={{ item }} state=present update_cache=yes
+  with_items:
+    - ntp
+  tags: update_ntp
+
+- name: Copy ntp template
+  template: src=ntp.conf.j2 dest=/etc/ntp.conf
+  tags: update_ntp
+
+- name: Copy ntp2 template
+  template: src=ntp2.conf.j2 dest=/etc/ntp.conf
+  when: datacenter == "staging"
+  tags: update_ntp
+
+- name: Copy ntp3 template
+  template: src=ntp3.conf.j2 dest=/etc/ntp.conf
+  when: datacenter == "Alikarta"
+  tags: update_ntp
+
+- name: restart ntp service
+  command: /usr/sbin/service ntp restart
+  tags: update_ntp
+

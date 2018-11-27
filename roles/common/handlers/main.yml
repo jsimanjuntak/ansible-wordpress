@@ -1,0 +1,16 @@
+---
+- name: restart cron
+  service: name=cron state=restarted
+
+- name: reload cron
+  service: name=cron state=reloaded
+
+- name: update tzdata
+  command: /usr/sbin/dpkg-reconfigure --frontend noninteractive tzdata
+
+- name: sysctl reconfigure
+  shell: sysctl -p /etc/sysctl.conf
+
+- name: restart host
+  command: init 6
+

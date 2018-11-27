@@ -1,0 +1,2 @@
+- name: Setup bashrc for show date on history
+  lineinfile: dest=/etc/bash.bashrc state=present line="export HISTTIMEFORMAT=\"%F %T \""

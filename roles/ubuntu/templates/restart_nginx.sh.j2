@@ -1,0 +1,14 @@
+
+echo > /tmp/icinga_event_handler_log
+date >> /tmp/icinga_event_handler_log
+echo "=====================" >> /tmp/icinga_event_handler_log
+free -m >>  /tmp/icinga_event_handler_log
+echo "=====================" >> /tmp/icinga_event_handler_log
+echo "Restarting Nginx ... " >> /tmp/icinga_event_handler_log
+sudo  /usr/sbin/service  nginx restart
+echo "=====================" >> /tmp/icinga_event_handler_log
+free -m >>  /tmp/icinga_event_handler_log
+echo "=====================" >> /tmp/icinga_event_handler_log
+
+IP=`/sbin/ifconfig |grep 192|cut -d: -f2|awk '{print $1}'`
+cat /tmp/icinga_event_handler_log  | mailx -s "Icinga Alert - Nginx Restarted on $IP" -S smtp="sendmail.tokopedia.local:25" -r nginx-restart@tokopedia.com SYSADMIN

@@ -1,0 +1,22 @@
+- name: Create Users on servers
+  user: name="{{ item.username }}" groups="{{ item.groups }}" ssh_key_file="/home/{{ item.username }}/.ssh/id_rsa" shell=/bin/bash append=yes home="/home/{{ item.username }}" update_password=on_create password="$6$wMilEjl3$2.3U/nWdhd7OXKJ.gDw/FO9kB1UGJqSLwCvpQWcucwaEtiHoJ1ayh7zY5C85HAICg6bV/1Q2Z4JgPfoFegTv.."
+  with_items: "{{ app_config[app_name].users | default([]) }}"
+  tags: adduser
+
+- name: Create Users on servers
+  user: name="{{ item.username }}" groups="{{ item.groups }}" ssh_key_file="/home/{{ item.username }}/.ssh/id_rsa" shell=/bin/bash append=yes home="/home/{{ item.username }}" update_password=on_create password="$6$wMilEjl3$2.3U/nWdhd7OXKJ.gDw/FO9kB1UGJqSLwCvpQWcucwaEtiHoJ1ayh7zY5C85HAICg6bV/1Q2Z4JgPfoFegTv.."
+  with_items: "{{ app_config[app_name].users | default([]) }}"
+  tags: removeuser
+
+- name: Enabling Key based Access for the Users
+  authorized_key: user="{{ item.username }}" key="{{ lookup('file', item.key_file ) }}" state=present
+  with_items: "{{ app_config[app_name].users | default([]) }}"
+  tags: adduser
+
+- name: Copy nopasswd file for sudo users
+  template: src=nopasswd.j2 dest=/etc/sudoers.d/nopasswd mode=0440
+  tags: adduser
+
+- name: Copy staff file for staff sudoers
+  template: src=staff.j2 dest=/etc/sudoers.d/staff mode=0440
+  tags: adduser

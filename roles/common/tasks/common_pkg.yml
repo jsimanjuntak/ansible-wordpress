@@ -1,0 +1,40 @@
+---
+- name: apt-get update
+  command: apt-get update -y
+  when : env == 'staging'
+
+- name: Install apachetop, git, ntpdate, sysstat, mailutils
+  apt: name={{ item }} state=present update_cache=yes
+  with_items:
+    - htop
+    - ntpdate
+    - sysstat
+    - mailutils
+    - inetutils-traceroute
+    - unattended-upgrades
+    - postfix
+    - lvm2
+    - jq
+    - tree
+
+- name: Install additional playbook packages
+  apt: name="{{ item }}" state=present update_cache=yes
+  with_items: additional_pkgs
+  when: additional_pkgs is defined
+
+- name: Download custom packages
+  get_url: url="http://tokopedia-upload.s3-website-ap-southeast-1.amazonaws.com/packages/{{item}}_amd64.deb" dest=/tmp/
+  with_items: "{{ custom_pkgs if custom_pkgs is defined else '' }}"
+  ignore_errors: yes
+  tags: custom
+
+- name: Install custom packages
+  apt: deb="/tmp/{{ item.1 }}_amd64.deb" force=yes
+  with_indexed_items: "{{ custom_pkgs if custom_pkgs is defined else '' }}"
+  ignore_errors: yes
+  tags: custom
+
+- name: run ldconfig
+  shell: ldconfig
+  when: custom_pkgs is defined
+  tags: custom

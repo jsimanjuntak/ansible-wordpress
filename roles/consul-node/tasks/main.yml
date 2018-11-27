@@ -1,0 +1,4 @@
+---
+
+- include: consul-node.yml tags=consul-node
+  when : env != 'beta'

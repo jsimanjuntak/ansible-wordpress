@@ -1,0 +1,32 @@
+---
+
+- name: set locale
+  locale_gen: name={{ locale }} state=present
+
+#- name: set /etc/localtime
+#  command: /bin/cp /usr/share/zoneinfo/{{ timezone }} /etc/localtime
+#  notify: restart cron
+
+- name: check current timezone
+  shell: cat /etc/timezone
+  register: current_timezone
+
+- name: set /etc/timezone
+  copy: content={{timezone}} dest=/etc/timezone owner=root group=root mode=0644
+  when: current_timezone.stdout != timezone
+  notify: update tzdata
+
+- name: ntpdate cron daily
+  copy: src=ntpdate dest=/etc/cron.daily/ owner=root group=root mode=755
+  notify: restart cron
+
+- meta: flush_handlers
+
+- name: check current timezone
+  shell: cat /etc/timezone
+  register: current_timezone
+
+- name: set /etc/timezone
+  copy: content={{timezone}} dest=/etc/timezone owner=root group=root mode=0644
+  when: current_timezone.stdout != timezone
+  notify: update tzdata

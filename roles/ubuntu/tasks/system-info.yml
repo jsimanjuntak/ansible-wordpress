@@ -1,0 +1,3 @@
+- name: Copy system-info template
+  template: src=system-info.ubuntu dest=/usr/bin/system-info mode=0755 
+

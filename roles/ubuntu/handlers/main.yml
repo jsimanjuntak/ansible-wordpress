@@ -1,0 +1,9 @@
+---
+#- name: restart nrpe-server
+#  service: name=nagios-nrpe-server state=restarted
+
+- name: restart snmp
+  service: name=snmpd state=restarted
+
+- name: restart ntp
+  service: name=ntp state=restarted
