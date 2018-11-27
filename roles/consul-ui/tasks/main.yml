@@ -1,0 +1,88 @@
+---
+  # password 'consul' with salt 'ff'. use openssl to generate.
+- name: Add consul user 
+  user: name=consul password=$1$ff$UPjrGZCYiyjbKCZYrmOxa0
+
+- name: Install unzip packages from apt
+  apt: name={{ item }} state=present update_cache=yes
+  with_items:
+    - unzip
+
+- name: Copy consul packages
+  get_url: url="http://tokopedia-upload.s3-website-ap-southeast-1.amazonaws.com/packages/{{item}}.zip" dest=/tmp/{{ item }}.zip
+  with_items:
+    - consul_0.8.3_linux_amd64
+
+- name: Install consul packages
+  unarchive: copy=no src=/tmp/{{ item }}.zip dest=/usr/local/bin
+  with_items:
+    - consul_0.8.3_linux_amd64
+
+- name: Copy consul web UI packages
+  get_url: url="http://tokopedia-upload.s3-website-ap-southeast-1.amazonaws.com/packages/{{item}}.zip" dest=/tmp/{{ item }}.zip
+  with_items:
+    - consul_0.7.0_web_ui
+
+- name: Prepare directories
+  file: path=/var/consul/ui state=directory owner=consul group=consul mode=0775 recurse=yes
+
+- name: Install consul web UI
+  unarchive: copy=no src=/tmp/{{ item }}.zip dest=/var/consul/ui
+  with_items:
+    - consul_0.7.0_web_ui
+
+- name: Prepare consul configuration directories - client
+  file: path=/etc/consul.d/{{ item }} state=directory owner=consul group=consul mode=0775 recurse=yes
+  with_items:
+    - client
+
+- name: Prepare consul data directory
+  file: path=/var/consul state=directory owner=consul group=consul mode=0775 recurse=yes
+
+- name: Copy consul config
+  template: src={{ item }}.config.json.j2 dest=/etc/consul.d/{{ item }}/config.json
+  with_items:
+    - client
+
+- name: Copy upstart scripts for consul
+  template: src={{ item }}.conf.j2 dest=/etc/init/{{ item }}.conf
+  with_items:
+    - consul
+
+- name: Prepare nginx certs directory
+  file: path=/etc/nginx/{{ item }} state=directory recurse=yes
+  with_items:
+    - certs
+    - sites-available
+
+- name: Copy SSL CA certificates
+  template: src={{ item }}.crt.j2 dest=/etc/nginx/certs/{{ item }}.crt
+  with_items:
+    - ca
+
+- name: Copy server certificates
+  template: src=star_tokopedia_net.pem.j2 dest=/etc/nginx/certs/star_tokopedia_net.pem
+  tags : copy-cert
+
+- name: Copy server keys
+  template: src=star_tokopedia_net.key.j2 dest=/etc/nginx/certs/star_tokopedia_net.key
+  tags : copy-cert
+
+- name: Copy nginx config nginx.conf 
+  copy: src=nginx.conf dest=/etc/nginx/
+
+- name: Copy nginx config
+  template: src=consul.tokopedia.net.j2 dest=/etc/nginx/sites-available/consul.tokopedia.net
+  notify: reload nginx
+
+- name: Copy datadog config
+  copy: src=consul.yaml dest=/etc/dd-agent/conf.d/
+  notify: restart datadog
+
+- name: Stop consul service
+  shell: stop consul
+  ignore_errors: yes
+
+- name: Start consul service
+  shell: start consul
+

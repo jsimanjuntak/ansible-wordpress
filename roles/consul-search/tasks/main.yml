@@ -1,0 +1,16 @@
+---
+- name: Install git, java packages from apt
+  apt: name={{ item }} state=present update_cache=yes
+  with_items:
+  - git
+  - openjdk-7-jre
+
+- name: Prepare nginx certs directory
+  file: path=/etc/nginx/{{ item }} state=directory recurse=yes
+  with_items:
+    - sites-available
+
+- name: Copy nginx config
+  template: src=consul-search.tokopedia.com.j2 dest=/etc/nginx/sites-available/consul-search.tokopedia.com
+  notify: reload nginx
+

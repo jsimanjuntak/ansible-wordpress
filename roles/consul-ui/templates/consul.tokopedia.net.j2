@@ -1,0 +1,29 @@
+upstream backend {
+    server 127.0.0.1:8500;
+    keepalive 32;
+}
+
+server {
+    listen        443;
+    ssl on;
+    server_name consul.tokopedia.net;
+
+    proxy_http_version 1.1;
+    proxy_set_header Connection "";
+
+    add_header Allow "GET, POST, PUT, HEAD" always;
+    if ( $request_method !~ ^(GET|POST|PUT|HEAD)$ ) {
+        return 405;
+    }
+
+    ssl_certificate      /etc/nginx/certs/star_tokopedia_net.pem;
+    ssl_certificate_key  /etc/nginx/certs/star_tokopedia_net.key;
+    ssl_client_certificate /etc/ssl/ca/certs/ca.crt;
+    ssl_crl /etc/ssl/ca/private/ca.crl;
+    ssl_verify_client on;
+
+    location / {
+        proxy_pass http://backend;
+    }
+}
+

@@ -1,0 +1,61 @@
+---
+  # password 'consul' with salt 'ff'. use openssl to generate.
+- name: Add consul user 
+  user: name=consul password=$1$ff$UPjrGZCYiyjbKCZYrmOxa0
+
+- name: Install unzip packages from apt
+  apt: name={{ item }} state=present update_cache=yes
+  with_items:
+  - unzip
+
+- name: Copy consul packages
+  get_url: url="http://tokopedia-upload.s3-website-ap-southeast-1.amazonaws.com/packages/{{item}}.zip" dest=/tmp/{{ item }}.zip
+  with_items:
+    - consul_1.0.0_linux_amd64
+    - consul-template_0.15.0_linux_amd64
+    - consul-replicate_0.3.1_linux_amd64
+
+- name: Install consul packages
+  unarchive: copy=no src=/tmp/{{ item }}.zip dest=/usr/local/bin
+  with_items:
+    - consul_1.0.0_linux_amd64
+    - consul-template_0.15.0_linux_amd64
+    - consul-replicate_0.3.1_linux_amd64
+
+- name: Prepare consul configuration directories -- bootstrap. server. client
+  file: path=/etc/consul.d/{{ item }} state=directory owner=consul group=consul mode=0775 recurse=yes
+  with_items:
+    - bootstrap
+    - server
+
+- name: Prepare consul data directory
+  file: path=/var/consul state=directory owner=consul group=consul mode=0775 recurse=yes
+
+- name: Prepare consul log directory
+  file: path=/var/log/consul state=directory owner=consul group=consul mode=0775 recurse=yes
+
+- name: Copy consul config
+  template: src={{ item }}.config.json.j2 dest=/etc/consul.d/{{ item }}/config.json
+  with_items:
+    - bootstrap
+    - server
+
+#- name: Copy master token for consul acl config
+#  template: src=master-token.config.json.j2 dest=/etc/consul.d/{{ item }}/master-token.json
+#  with_items:
+#    - client
+#  tags: [consulmas]
+
+
+- name: Copy upstart scripts for consul
+  template: src={{ item }}.conf.j2 dest=/etc/init/{{ item }}.conf
+  with_items:
+    - consul
+
+- name: Stop consul service
+  shell: stop consul
+  ignore_errors: yes
+
+#- name: Start consul service
+#  shell: start consul
+

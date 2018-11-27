@@ -1,0 +1,13 @@
+description "Consul server process"
+
+start on (local-filesystems and net-device-up IFACE=eth0)
+stop on runlevel [!12345]
+
+respawn
+
+limit nofile 30000 30000
+
+setuid consul
+setgid consul
+
+exec consul agent -config-dir /etc/consul.d/server > /var/log/consul/consul.log

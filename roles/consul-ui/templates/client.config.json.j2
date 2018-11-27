@@ -1,0 +1,21 @@
+{
+    "server": false,
+    "datacenter": "{{ consul_dc }}",
+    "data_dir": "/var/consul",
+    "ui_dir": "/var/consul/ui",
+    "encrypt": "LsuCqPNHRnGPw0wA8SMp2g==",
+    "log_level": "INFO",
+    "enable_syslog": true,
+    "telemetry": {
+        "dogstatsd_addr": "127.0.0.1:8125"
+    },
+    "start_join": [
+      {% for item in consul_hosts  %}
+        "{{ item }}"{% if not loop.last %},{% endif %}
+  
+      {% endfor %}
+    ],
+    "addresses": {
+        "http": "0.0.0.0"
+    }
+}

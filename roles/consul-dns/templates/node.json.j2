@@ -1,0 +1,135 @@
+#jinja2: lstrip_blocks: True
+{
+  "bootstrap": false,
+  "server": false,
+  "data_dir": "/var/consul",
+  "datacenter": "{{ consul_dc }}",
+  "encrypt": "LsuCqPNHRnGPw0wA8SMp2g==",
+  "start_join": [
+    {% for item in consul_hosts  %}
+      "{{ item }}"{% if not loop.last %},{% endif %}
+
+    {% endfor %}
+  ],
+  "log_level": "INFO",
+  "dns_config": {
+    "service_ttl": {
+      "*": "60s"
+    },
+    "enable_truncate": true,
+    "recursor_timeout": "1s"
+   },
+   "addresses": {
+     "dns": "0.0.0.0"
+   },
+   "ports": {
+     "dns": 53
+   },
+  "enable_syslog": true,
+  {% if file_script_healthcheck is defined %}
+  "enable_script_checks": true,
+  {% endif %}
+  "services": [
+    {
+      "id": "{{ inventory_hostname }}",
+      "name": "{% if consul_app_name is defined %}{{ consul_app_name }}{% else %}{{ app_name }}{% endif %}",
+      "tags": [{% if consul_tags is defined %}{% for item in consul_tags.split(',') %}"{{ item }}"{% if not loop.last %},{% endif %}{% endfor %}{% else %}""{% endif %}],
+      "address": "{{ ansible_default_ipv4.address }}",
+      {% if disable_tcp_check is defined and file_script_healthcheck is defined %}
+
+      {% else %}
+      "port": {{ app_port }},
+      {% endif %}
+      "enableTagOverride": false,
+      {% if disable_tcp_check is defined and file_script_healthcheck is defined %}
+      "checks": [
+      {% for item in file_script_healthcheck %}
+          {
+          "Script": "{{ item.script }}",
+          "name": "{{ item.name }}",
+          "interval": "20s",
+          "timeout": "{% if item.timeout is defined %}{{ item.timeout }}{% else %}2s{% endif %}"
+          }{% if not loop.last %},{% endif %}
+          {% endfor %}
+      ]
+      {% else %}
+      "checks": [
+        {% if tcp_healthcheck is defined %}
+        {% for item in tcp_healthcheck %}
+        {
+            "tcp": "127.0.0.1:{{ item }}",
+            "interval": "10s"
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+        {% if nginx_check is defined %}
+        ,{
+            "id": "nginx-check",
+            "name": "check nginx by port 80",
+            "tcp": "127.0.0.1:80",
+            "interval": "10s",
+            "timeout": "60s"
+        }
+        {% endif %}
+        {% if http_healthcheck is defined or script_healthcheck is defined %},{% endif %}
+        {% elif app_name not in ['yohsua'] %}
+        {
+            "tcp": "127.0.0.1:{{ app_port }}",
+            "interval": "10s"
+        }
+        {% if http_healthcheck is defined or script_healthcheck is defined %},{% endif %}
+        {% endif %}
+        {% if http_healthcheck is defined %}
+        {% for item in http_healthcheck %}
+        {
+            "id": "api",
+            "name": "HTTP API on port {{ item.port }}",
+            "http": "http://127.0.0.1:{{ item.port }}{{ item.path }}",
+            "interval": "10s",
+            {% if item.method is defined  %}
+            "method": "{{ item.method }}",{% endif %}
+            "timeout": "{% if item.timeout is defined %}{{ item.timeout }}{% else %}1s{% endif %}"
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}{% if script_healthcheck is defined %},{% endif %}
+        {% endif %}
+        {% if script_healthcheck is defined %}
+        {% for item in script_healthcheck %}
+        {
+            "Script": "{{ item.script }}",
+            "interval": "20s",
+            "timeout": "{% if item.timeout is defined %}{{ item.timeout }}{% else %}2s{% endif %}"
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+        {% endif %}
+
+      ]
+      {% endif %}
+    }{% if services is defined %}{% for item in services  %},{
+        "id": "{{item.name}}-{{ inventory_hostname }}",
+        "name": "{{ item.name }}",
+        "tags": ["{{ app_name }}"],
+        "address": "{{ ansible_default_ipv4.address }}",
+        "port": {{ item.port }},
+        "checks": [
+            {
+                "tcp":"127.0.0.1:{{ item.port }}",
+                "interval": "15s",
+                "timeout": "1s"
+            }
+        ]
+    }{% endfor %}{% endif %}
+
+  ]{% if fd_watch is defined %},{% endif %}
+  {% if fd_watch is defined %}
+  "watches": [
+    {% for item in fd_watch %}
+    {
+      "type": "checks",
+      "service": "{{ app_name }}",
+      "handler": "{{ item.handler }}"
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+    ]
+  {% endif %}
+
+}
+
