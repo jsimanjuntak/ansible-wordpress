@@ -3,10 +3,10 @@
 - include: ntp.yml tags=ntp
 - include: system-info.yml tags=system-info
 - include: history.yml tags=history
-- include: swappiness.yml tags=swappiness
-  when : datacenter == 'Biznet'
+#- include: swappiness.yml tags=swappiness
+#  when : datacenter == 'Biznet'
 
-- include: resolve.yml tags=change-resolve
-  when : datacenter == 'Biznet'
+#- include: resolve.yml tags=change-resolve
+#  when : datacenter == 'Biznet'
 
 - include: transparent-huge-page.yml tags=transparent-huge-page
