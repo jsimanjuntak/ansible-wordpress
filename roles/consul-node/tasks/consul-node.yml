@@ -9,7 +9,8 @@
   - unzip
 
 - name: Copy consul packages
-  get_url: url="http://tokopedia-upload.s3-website-ap-southeast-1.amazonaws.com/packages/{{item}}.zip" dest=/tmp/{{ item }}.zip
+  #get_url: url="http://tokopedia-upload.s3-website-ap-southeast-1.amazonaws.com/packages/{{item}}.zip" dest=/tmp/{{ item }}.zip
+  get_url: url="https://releases.hashicorp.com/consul/0.8.0/{{item}}.zip" dest=/tmp/{{item}}.zip
   with_items:
     - consul_1.0.0_linux_amd64
 
