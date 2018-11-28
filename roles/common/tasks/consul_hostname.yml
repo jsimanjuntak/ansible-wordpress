@@ -1,3 +1,3 @@
 - name: set in /etc/hosts consul
-  lineinfile: dest=/etc/hosts insertafter='^127.0.0.1' line="10.0.11.100   consul.tokopedia.local"
+  lineinfile: dest=/etc/hosts insertafter='^127.0.0.1' line="10.0.11.100   consul.jung.local"
   when: aws_migration_test is defined and aws_migration_test

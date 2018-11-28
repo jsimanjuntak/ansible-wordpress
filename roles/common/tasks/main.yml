@@ -3,7 +3,7 @@
   raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
 
 - include: hostname.yml tags=hostname
-  when : datacenter == 'Biznet'
+  #when : datacenter == 'Biznet'
 
 - include: users.yml tags=useradd
 - include: common_pkg.yml tags=commonpkg
@@ -12,5 +12,5 @@
 - include: security_update.yml tags=secupdate
 - include: transparent-huge-page.yml tags=transparent-huge-page
 
-- include: fixgcp.yml tags=fixgcp
-  when : (datacenter == "GCP")
+#- include: fixgcp.yml tags=fixgcp
+#  when : (datacenter == "GCP")

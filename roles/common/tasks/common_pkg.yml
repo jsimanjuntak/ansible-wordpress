@@ -1,7 +1,7 @@
 ---
 - name: apt-get update
   command: apt-get update -y
-  when : env == 'staging'
+  #when : env == 'staging'
 
 - name: Install apachetop, git, ntpdate, sysstat, mailutils
   apt: name={{ item }} state=present update_cache=yes
@@ -23,7 +23,8 @@
   when: additional_pkgs is defined
 
 - name: Download custom packages
-  get_url: url="http://tokopedia-upload.s3-website-ap-southeast-1.amazonaws.com/packages/{{item}}_amd64.deb" dest=/tmp/
+  #get_url: url="http://tokopedia-upload.s3-website-ap-southeast-1.amazonaws.com/packages/{{item}}_amd64.deb" dest=/tmp/
+  get_url: url="http://security.ubuntu.com/ubuntu/pool/main/a/apt/{{item}}_amd64.deb" dest=/tmp/
   with_items: "{{ custom_pkgs if custom_pkgs is defined else '' }}"
   ignore_errors: yes
   tags: custom

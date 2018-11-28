@@ -1,6 +1,6 @@
 ---
-- name: Set resolve.conf in Aliyun
-  template: src=tail.j2 dest=/etc/resolvconf/resolv.conf.d/tail
+#- name: Set resolve.conf in Aliyun
+#  template: src=tail.j2 dest=/etc/resolvconf/resolv.conf.d/tail
 
 - name: remove resolveconf file 
   file: path='/etc/dhcp/dhclient-enter-hooks.d/resolvconf' state=absent
